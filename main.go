@@ -196,7 +196,7 @@ func (w *World) run(input io.Reader) {
 	if !noDelay {
 		w.print(true)
 	}
-	delay := (-0.05*float64(len(w.Objects)) + 0.5) * 1000
+	delay := (-0.065*float64(len(w.Objects)) + 0.5) * 1000
 	if delay <= 0.01 {
 		delay = 0.01
 	}
