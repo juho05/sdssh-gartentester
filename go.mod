@@ -1,4 +1,4 @@
-module gartentester
+module github.com/juho05/sdssh-gartentester
 
 go 1.20
 

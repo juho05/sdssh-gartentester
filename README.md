@@ -8,7 +8,7 @@ Download the executable from the [releases](https://github.com/juho05/sdssh-gart
 
 ## Usage
 
-*The following instructions are for macOS and Linux. You might have to tweak the syntax a bit to work on Windows.
+*The following instructions are for macOS and Linux. You might have to tweak the syntax a bit to work on Windows.*
 
 ### Pipe the output of your programm into the testing tool
 
