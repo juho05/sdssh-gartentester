@@ -4,7 +4,12 @@ A testing tool and simulator for the [SDSSH Challenge 2023](https://github.com/m
 
 ## Installation
 
-Download the executable from the [releases](https://github.com/juho05/sdssh-gartentester/releases/latest) page.
+1. Download the executable from the [releases](https://github.com/juho05/sdssh-gartentester/releases/latest) page.
+2. Rename the file to `gartentester.exe` (Windows) or `gartentester` (macOS/Linux)
+3. On macOS/Linux: make the file executable:
+```
+chmod +x gartentester
+```
 
 ## Usage
 
