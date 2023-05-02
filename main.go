@@ -197,8 +197,8 @@ func (w *World) run(input io.Reader) {
 		w.print(true)
 	}
 	delay := (-0.065*float64(len(w.Objects)) + 0.5) * 1000
-	if delay <= 0.01 {
-		delay = 0.01
+	if delay <= 10 {
+		delay = 10
 	}
 	delayDuration := time.Duration(delay) * time.Millisecond
 
@@ -237,16 +237,17 @@ func (w *World) run(input io.Reader) {
 				os.Exit(1)
 			}
 			if !noDelay {
-				w.print(true)
+				if delay > 50 || i%2 == 0 {
+					w.print(true)
+				}
 				time.Sleep(delayDuration)
 			}
 		}
+		if !noDelay {
+			w.print(true)
+		}
 		if w.check() {
-			if noDelay {
-				w.print(false)
-			}
-			fmt.Println("Success! The garden is tidy.")
-			os.Exit(0)
+			return
 		}
 	}
 }
@@ -291,4 +292,10 @@ func main() {
 	}
 
 	world.run(file)
+	world.print(!noDelay)
+	if world.check() {
+		fmt.Println("Success! The garden is tidy.")
+	} else {
+		fmt.Println("Failure! The objects are not sorted.")
+	}
 }
