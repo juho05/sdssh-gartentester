@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"flag"
 	"fmt"
 	"io"
 	"math"
@@ -30,10 +31,15 @@ type World struct {
 	ObjectLocations map[Pos]rune
 }
 
-var out = colorable.NewColorableStdout()
+var (
+	out     = colorable.NewColorableStdout()
+	noDelay = false
+)
 
-func (w *World) print() {
-	fmt.Fprintf(out, "\033[H\033[2J")
+func (w *World) print(clear bool) {
+	if clear {
+		fmt.Fprintf(out, "\033[H\033[2J")
+	}
 	for letter := 'A'; letter < 'A'+rune(len(w.Objects)); letter++ {
 		mass := w.Objects[letter]
 		if mass == -1 {
@@ -187,7 +193,9 @@ func (w *World) put() {
 }
 
 func (w *World) run(input io.Reader) {
-	w.print()
+	if !noDelay {
+		w.print(true)
+	}
 	delay := (-0.05*float64(len(w.Objects)) + 0.5) * 1000
 	if delay <= 0.01 {
 		delay = 0.01
@@ -225,16 +233,21 @@ func (w *World) run(input io.Reader) {
 			case "gegenstand_absetzen":
 				w.put()
 			default:
-				fmt.Fprintln(os.Stderr, "Unknown command")
+				fmt.Fprintln(os.Stderr, "Unknown command:", parts[0])
 				os.Exit(1)
 			}
+			if !noDelay {
+				w.print(true)
+				time.Sleep(delayDuration)
+			}
 		}
-		w.print()
 		if w.check() {
+			if noDelay {
+				w.print(false)
+			}
 			fmt.Println("Success! The garden is tidy.")
 			os.Exit(0)
 		}
-		time.Sleep(delayDuration)
 	}
 }
 
@@ -253,10 +266,29 @@ func (w *World) check() bool {
 }
 
 func main() {
-	if len(os.Args) == 1 {
-		fmt.Fprintf(os.Stderr, "USAGE: %s <world_file>\n", os.Args[0])
+	flag.BoolVar(&noDelay, "no-delay", false, "Disable delay between steps")
+	var input string
+	flag.StringVar(&input, "input", "", "File path to file containing commands")
+	flag.Parse()
+
+	worldFile := flag.Arg(0)
+	if worldFile == "" {
+		fmt.Fprintf(os.Stderr, "USAGE: %s [OPTIONS] <world_file>\n", os.Args[0])
 		os.Exit(1)
 	}
-	world := readWorld(os.Args[1])
-	world.run(os.Stdin)
+
+	world := readWorld(worldFile)
+
+	file := os.Stdin
+	if input != "" {
+		var err error
+		file, err = os.Open(input)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Failed to open input file:", err)
+			os.Exit(1)
+		}
+		defer file.Close()
+	}
+
+	world.run(file)
 }
