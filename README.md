@@ -15,7 +15,7 @@ chmod +x gartentester
 
 *The following instructions are for macOS and Linux. You might have to tweak the syntax a bit to work on Windows.*
 
-### Pipe the output of your programm into the testing tool
+### Pipe the output of your program into the testing tool
 
 ```sh
 ./my-program | ./gartentester example-garden.txt
