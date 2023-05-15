@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"math/rand"
 	"os"
 	"strconv"
 	"strings"
@@ -272,12 +273,113 @@ func (w *World) check() bool {
 	return true
 }
 
+func inputInt(prompt string, min, max int) int {
+	scanner := bufio.NewScanner(os.Stdin)
+	for {
+		fmt.Print(prompt)
+		scanner.Scan()
+		text := scanner.Text()
+		num, err := strconv.Atoi(strings.TrimSpace(text))
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Value must be a number")
+			continue
+		}
+		if num < min || num > max {
+			fmt.Fprintln(os.Stderr, "Value must be between", min, "and", max)
+			continue
+		}
+		return num
+	}
+}
+
+func generateWorld(path string) {
+	file, err := os.Create(path)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Failed to create world file:", err)
+		os.Exit(1)
+	}
+	defer file.Close()
+
+	width := inputInt("Width (4-128): ", 4, 128)
+	height := inputInt("Height (4-128): ", 4, 128)
+
+	maxAreaCount := width*height - 1
+	if maxAreaCount > 26 {
+		maxAreaCount = 26
+	}
+
+	areaCount := inputInt(fmt.Sprintf("Area count (2-%d): ", maxAreaCount), 2, maxAreaCount)
+
+	areas := make(map[rune]int, areaCount)
+	areaLocations := make(map[int]rune, areaCount)
+	for i := 0; i < areaCount; i++ {
+		areas[rune('A'+i)] = rand.Intn(areaCount*3) * 10
+		for {
+			location := rand.Intn(width * height)
+			if _, ok := areaLocations[location]; !ok {
+				areaLocations[location] = rune('A' + i)
+				break
+			}
+		}
+	}
+
+	emptyCount := rand.Intn(areaCount/2) + 1
+	for i := 0; i < emptyCount; i++ {
+		areas[rune('A'+rand.Intn(areaCount-1))] = -1
+	}
+
+	var robotPos int
+	for {
+		robotPos = rand.Intn(width * height)
+		if _, ok := areaLocations[robotPos]; !ok {
+			break
+		}
+	}
+
+	for r, weight := range areas {
+		if weight >= 0 {
+			fmt.Fprintf(file, "%s=%d\n", string(r), weight)
+		} else {
+			fmt.Fprintf(file, "%s=\n", string(r))
+		}
+	}
+	fmt.Fprintln(file)
+
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			if r, ok := areaLocations[y*width+x]; ok {
+				fmt.Fprint(file, string(r))
+			} else if y*width+x == robotPos {
+				fmt.Fprint(file, "$")
+			} else {
+				fmt.Fprint(file, ".")
+			}
+		}
+		if y < height-1 {
+			fmt.Fprintln(file)
+		}
+	}
+}
+
 func main() {
+	var generate bool
+	flag.BoolVar(&generate, "generate", false, "Generate a random garden")
 	flag.BoolVar(&noDelay, "no-delay", false, "Disable delay between steps")
 	flag.BoolVar(&step, "step", false, "Prompt to press enter before every step")
 	var input string
 	flag.StringVar(&input, "input", "", "File path to file containing commands")
 	flag.Parse()
+
+	worldFile := flag.Arg(0)
+	if worldFile == "" {
+		fmt.Fprintf(os.Stderr, "USAGE: %s [OPTIONS] <world_file>\n", os.Args[0])
+		os.Exit(1)
+	}
+
+	if generate {
+		generateWorld(worldFile)
+		return
+	}
 
 	if noDelay && step {
 		fmt.Fprintln(os.Stderr, "Cannot enable -no-delay and -step at the same time")
@@ -285,12 +387,6 @@ func main() {
 	}
 	if step && input == "" {
 		fmt.Fprintln(os.Stderr, "Cannot enable -step if input is set to STDIN (use -input to specify an input file)")
-		os.Exit(1)
-	}
-
-	worldFile := flag.Arg(0)
-	if worldFile == "" {
-		fmt.Fprintf(os.Stderr, "USAGE: %s [OPTIONS] <world_file>\n", os.Args[0])
 		os.Exit(1)
 	}
 

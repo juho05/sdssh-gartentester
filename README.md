@@ -15,25 +15,33 @@ chmod +x gartentester
 
 *The following instructions are for macOS and Linux. You might have to tweak the syntax a bit to work on Windows.*
 
-### Pipe the output of your program into the testing tool
+### Generate a random garden
+
+```sh
+./gartentester -generate output.txt
+```
+
+### Test a command sequence
+
+#### Pipe the output of your program into the testing tool
 
 ```sh
 ./my-program | ./gartentester example-garden.txt
 ```
 
-### Read commands from a file
+#### Read commands from a file
 
 ```sh
 ./gartentester -input commands.txt example-garden.txt
 ```
 
-### Disable animation (faster)
+#### Disable animation (faster)
 
 ```sh
 ./gartentester -no-delay -input commands.txt example-garden.txt
 ```
 
-### Enable stepping
+#### Enable stepping
 
 ```sh
 ./gartentester -step -input commands.txt example-garden.txt
