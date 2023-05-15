@@ -34,6 +34,7 @@ type World struct {
 var (
 	out     = colorable.NewColorableStdout()
 	noDelay = false
+	step    = false
 )
 
 func (w *World) print(clear bool) {
@@ -214,9 +215,13 @@ func (w *World) run(input io.Reader) {
 			var err error
 			count, err = strconv.Atoi(strings.TrimSpace(parts[1]))
 			if err != nil {
-				fmt.Fprintln(os.Stderr, "Invalid input")
+				fmt.Fprintln(os.Stderr, "Invalid input (command repeat argument is not a valid number)")
 				os.Exit(1)
 			}
+		}
+		if step {
+			fmt.Print("Press enter to continue...")
+			bufio.NewScanner(os.Stdin).Scan()
 		}
 		for i := 0; i < count; i++ {
 			switch parts[0] {
@@ -243,8 +248,9 @@ func (w *World) run(input io.Reader) {
 				time.Sleep(delayDuration)
 			}
 		}
-		if !noDelay {
+		if !noDelay && (delay <= 50 || count%2 == 0) {
 			w.print(true)
+			fmt.Println(text)
 		}
 		if w.check() {
 			return
@@ -268,9 +274,19 @@ func (w *World) check() bool {
 
 func main() {
 	flag.BoolVar(&noDelay, "no-delay", false, "Disable delay between steps")
+	flag.BoolVar(&step, "step", false, "Prompt to press enter before every step")
 	var input string
 	flag.StringVar(&input, "input", "", "File path to file containing commands")
 	flag.Parse()
+
+	if noDelay && step {
+		fmt.Fprintln(os.Stderr, "Cannot enable -no-delay and -step at the same time")
+		os.Exit(1)
+	}
+	if step && input == "" {
+		fmt.Fprintln(os.Stderr, "Cannot enable -step if input is set to STDIN (use -input to specify an input file)")
+		os.Exit(1)
+	}
 
 	worldFile := flag.Arg(0)
 	if worldFile == "" {

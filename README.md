@@ -33,6 +33,12 @@ chmod +x gartentester
 ./gartentester -no-delay -input commands.txt example-garden.txt
 ```
 
+### Enable stepping
+
+```sh
+./gartentester -step -input commands.txt example-garden.txt
+```
+
 ## License
 
 Copyright (c) 2023 Julian Hofmann
