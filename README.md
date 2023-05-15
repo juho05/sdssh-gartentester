@@ -13,7 +13,7 @@ chmod +x gartentester
 
 ## Usage
 
-*The following instructions are for macOS and Linux. You might have to tweak the syntax a bit to work on Windows.*
+*The following instructions are for macOS and Linux. You might have to tweak the syntax a bit to work on Windows (replace `./` with `.\`, append `.exe` to executables, …).*
 
 ### Generate a random garden
 
