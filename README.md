@@ -69,6 +69,11 @@ chmod +x gartentester
 
 ## Building
 
+```sh
+git clone https://github.com/juho05/sdssh-gartentester
+cd sdssh-gartentester
+```
+
 ### For your current computer
 
 ```sh
