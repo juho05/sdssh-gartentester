@@ -47,6 +47,21 @@ chmod +x gartentester
 ./gartentester -step -input commands.txt example-garden.txt
 ```
 
+## Building
+
+### For your current computer
+
+```sh
+go build
+```
+
+### For other computers
+
+On a UNIX-like system (e.g. macOS/Linux):
+```sh
+./build.sh
+```
+
 ## License
 
 Copyright (c) 2023 Julian Hofmann
