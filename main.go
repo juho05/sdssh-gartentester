@@ -194,7 +194,7 @@ func (w *World) put() {
 	}
 }
 
-func (w *World) run(input io.Reader) {
+func (w *World) run(input io.Reader) (commandCount int) {
 	if !noDelay {
 		w.print(true)
 	}
@@ -242,6 +242,7 @@ func (w *World) run(input io.Reader) {
 				fmt.Fprintln(os.Stderr, "Unknown command:", parts[0])
 				os.Exit(1)
 			}
+			commandCount++
 			if !noDelay {
 				if delay > 50 || i%2 == 0 {
 					w.print(true)
@@ -257,6 +258,7 @@ func (w *World) run(input io.Reader) {
 			return
 		}
 	}
+	return
 }
 
 func (w *World) check() bool {
@@ -403,10 +405,10 @@ func main() {
 		defer file.Close()
 	}
 
-	world.run(file)
+	commandCount := world.run(file)
 	world.print(!noDelay)
 	if world.check() {
-		fmt.Println("Success! The garden is tidy.")
+		fmt.Printf("Success! The garden is tidy. The robot executed %d commands.\n", commandCount)
 	} else {
 		fmt.Println("Failure! The objects are not sorted.")
 	}
