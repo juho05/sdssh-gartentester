@@ -22,7 +22,7 @@ type Pos struct {
 	Y int
 }
 
-type World struct {
+type Garden struct {
 	Size     Pos
 	RobotPos Pos
 	// -1 == empty
@@ -38,7 +38,7 @@ var (
 	step    = false
 )
 
-func (w *World) print(clear bool) {
+func (w *Garden) print(clear bool) {
 	if clear {
 		fmt.Fprintf(out, "\033[H\033[2J")
 	}
@@ -73,15 +73,15 @@ func (w *World) print(clear bool) {
 	}
 }
 
-func readWorld(path string) *World {
-	worldFile, err := os.ReadFile(path)
+func readGarden(path string) *Garden {
+	gardenFile, err := os.ReadFile(path)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to open world file: %s", err)
+		fmt.Fprintf(os.Stderr, "Failed to open garden file: %s", err)
 		os.Exit(1)
 	}
-	scanner := bufio.NewScanner(bytes.NewBuffer(worldFile))
+	scanner := bufio.NewScanner(bytes.NewBuffer(gardenFile))
 
-	world := &World{
+	garden := &Garden{
 		Objects:        make(map[rune]int),
 		RobotCarryMass: -1,
 	}
@@ -96,58 +96,58 @@ func readWorld(path string) *World {
 		}
 		parts := strings.Split(text, "=")
 		if len(parts) != 2 {
-			fmt.Fprintf(os.Stderr, "Invalid world file: sytax error line %d", line)
+			fmt.Fprintf(os.Stderr, "Invalid garden file: sytax error line %d", line)
 			os.Exit(1)
 		}
 		r, _ := utf8.DecodeRuneInString(strings.TrimSpace(parts[0]))
 		if r == utf8.RuneError {
-			fmt.Fprintf(os.Stderr, "Invalid world file: sytax error line %d", line)
+			fmt.Fprintf(os.Stderr, "Invalid garden file: sytax error line %d", line)
 			os.Exit(1)
 		}
 		parts[1] = strings.TrimSpace(parts[1])
 		if parts[1] == "" {
-			world.Objects[r] = -1
+			garden.Objects[r] = -1
 		} else {
 			mass, err := strconv.Atoi(parts[1])
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Invalid world file: sytax error line %d", line)
+				fmt.Fprintf(os.Stderr, "Invalid garden file: sytax error line %d", line)
 				os.Exit(1)
 			}
-			world.Objects[r] = mass
+			garden.Objects[r] = mass
 		}
 	}
 
-	world.ObjectLocations = make(map[Pos]rune, len(world.Objects))
+	garden.ObjectLocations = make(map[Pos]rune, len(garden.Objects))
 	row := 0
 	for scanner.Scan() {
 		line++
 		text := strings.TrimSpace(scanner.Text())
-		if world.Size.X != 0 && len(text) != world.Size.X {
+		if garden.Size.X != 0 && len(text) != garden.Size.X {
 			break
 		}
 		column := 0
 		for _, r := range text {
 			if r == '$' {
-				world.RobotPos = Pos{
+				garden.RobotPos = Pos{
 					X: column,
 					Y: row,
 				}
 			} else if r >= 'A' && r <= 'Z' {
-				world.ObjectLocations[Pos{
+				garden.ObjectLocations[Pos{
 					X: column,
 					Y: row,
 				}] = r
 			}
 			column++
 		}
-		world.Size.X = column
+		garden.Size.X = column
 		row++
 	}
-	world.Size.Y = row
-	return world
+	garden.Size.Y = row
+	return garden
 }
 
-func (w *World) moveRobot(dx, dy int) {
+func (w *Garden) moveRobot(dx, dy int) {
 	if w.RobotPos.X+dx >= w.Size.X || w.RobotPos.X+dx < 0 || w.RobotPos.Y+dy >= w.Size.Y || w.RobotPos.Y+dy < 0 {
 		fmt.Fprintln(os.Stderr, "Cannot move out of map")
 		os.Exit(2)
@@ -156,7 +156,7 @@ func (w *World) moveRobot(dx, dy int) {
 	w.RobotPos.Y += dy
 }
 
-func (w *World) pickup() {
+func (w *Garden) pickup() {
 	if w.RobotCarryMass != -1 {
 		fmt.Fprintln(os.Stderr, "Cannot pick up object: robot already carries an object")
 		os.Exit(2)
@@ -175,7 +175,7 @@ func (w *World) pickup() {
 	}
 }
 
-func (w *World) put() {
+func (w *Garden) put() {
 	if w.RobotCarryMass == -1 {
 		fmt.Fprintln(os.Stderr, "Cannot place object: robot doesn't carry any object")
 		os.Exit(2)
@@ -194,7 +194,7 @@ func (w *World) put() {
 	}
 }
 
-func (w *World) run(input io.Reader) (commandCount int) {
+func (w *Garden) run(input io.Reader) (commandCount int) {
 	if !noDelay {
 		w.print(true)
 	}
@@ -261,7 +261,7 @@ func (w *World) run(input io.Reader) (commandCount int) {
 	return
 }
 
-func (w *World) check() bool {
+func (w *Garden) check() bool {
 	if w.RobotCarryMass != -1 {
 		return false
 	}
@@ -294,10 +294,10 @@ func inputInt(prompt string, min, max int) int {
 	}
 }
 
-func generateWorld(path string, width, height, areaCount int) {
+func generateGarden(path string, width, height, areaCount int) {
 	file, err := os.Create(path)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Failed to create world file:", err)
+		fmt.Fprintln(os.Stderr, "Failed to create garden file:", err)
 		os.Exit(1)
 	}
 	defer file.Close()
@@ -357,7 +357,7 @@ func main() {
 	var generate bool
 	flag.BoolVar(&generate, "generate", false, "Generate a random garden")
 	var size string
-	flag.StringVar(&size, "size", "", "The size of the world to generated (format: widthxheight (e.g. 64x32, min: 4, max: 128) or random), default: prompt user")
+	flag.StringVar(&size, "size", "", "The size of the garden to generate (format: widthxheight (e.g. 64x32, min: 4, max: 128) or random), default: prompt user")
 	var areaCountStr string
 	flag.StringVar(&areaCountStr, "area-count", "", "The number of areas to generate (2-26 or random), default: prompt user")
 	flag.BoolVar(&noDelay, "no-delay", false, "Disable delay between steps")
@@ -366,9 +366,9 @@ func main() {
 	flag.StringVar(&input, "input", "", "File path to file containing commands")
 	flag.Parse()
 
-	worldFile := flag.Arg(0)
-	if worldFile == "" {
-		fmt.Fprintf(os.Stderr, "USAGE: %s [OPTIONS] <world_file>\n", os.Args[0])
+	gardenFile := flag.Arg(0)
+	if gardenFile == "" {
+		fmt.Fprintf(os.Stderr, "USAGE: %s [OPTIONS] <garden_file>\n", os.Args[0])
 		os.Exit(1)
 	}
 
@@ -433,7 +433,7 @@ func main() {
 			areaCount = inputInt(fmt.Sprintf("Area count (2-%d): ", maxAreaCount), 2, maxAreaCount)
 		}
 
-		generateWorld(worldFile, width, height, areaCount)
+		generateGarden(gardenFile, width, height, areaCount)
 		return
 	}
 
@@ -446,7 +446,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	world := readWorld(worldFile)
+	garden := readGarden(gardenFile)
 
 	file := os.Stdin
 	if input != "" {
@@ -459,9 +459,9 @@ func main() {
 		defer file.Close()
 	}
 
-	commandCount := world.run(file)
-	world.print(!noDelay)
-	if world.check() {
+	commandCount := garden.run(file)
+	garden.print(!noDelay)
+	if garden.check() {
 		fmt.Printf("Success! The garden is tidy. The robot executed %d commands.\n", commandCount)
 	} else {
 		fmt.Println("Failure! The objects are not sorted.")
