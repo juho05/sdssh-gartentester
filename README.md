@@ -69,6 +69,10 @@ chmod +x gartentester
 
 ## Building
 
+### Prerequisites
+- [Git](https://git-scm.com)
+- [Go](https://go.dev)
+
 ```sh
 git clone https://github.com/juho05/sdssh-gartentester
 cd sdssh-gartentester
