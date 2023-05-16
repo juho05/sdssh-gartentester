@@ -21,6 +21,26 @@ chmod +x gartentester
 ./gartentester -generate output.txt
 ```
 
+#### Set size
+
+```sh
+# generate a garden with width 64 and height 32
+./gartentester -generate -size 64x32 output.txt
+
+# generate a garden with a random size
+./gartentester -generate -size random output.txt
+```
+
+#### Set area count
+
+```sh
+# generate a garden with 8 areas
+./gartentester -generate -area-count 8 output.txt
+
+# generate a garden with a random area count
+./gartentester -generate -area-count random output.txt
+```
+
 ### Test a command sequence
 
 #### Pipe the output of your program into the testing tool

@@ -294,23 +294,13 @@ func inputInt(prompt string, min, max int) int {
 	}
 }
 
-func generateWorld(path string) {
+func generateWorld(path string, width, height, areaCount int) {
 	file, err := os.Create(path)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Failed to create world file:", err)
 		os.Exit(1)
 	}
 	defer file.Close()
-
-	width := inputInt("Width (4-128): ", 4, 128)
-	height := inputInt("Height (4-128): ", 4, 128)
-
-	maxAreaCount := width*height - 1
-	if maxAreaCount > 26 {
-		maxAreaCount = 26
-	}
-
-	areaCount := inputInt(fmt.Sprintf("Area count (2-%d): ", maxAreaCount), 2, maxAreaCount)
 
 	areas := make(map[rune]int, areaCount)
 	areaLocations := make(map[int]rune, areaCount)
@@ -366,6 +356,10 @@ func generateWorld(path string) {
 func main() {
 	var generate bool
 	flag.BoolVar(&generate, "generate", false, "Generate a random garden")
+	var size string
+	flag.StringVar(&size, "size", "", "The size of the world to generated (format: widthxheight (e.g. 64x32, min: 4, max: 128) or random), default: prompt user")
+	var areaCountStr string
+	flag.StringVar(&areaCountStr, "area-count", "", "The number of areas to generate (2-26 or random), default: prompt user")
 	flag.BoolVar(&noDelay, "no-delay", false, "Disable delay between steps")
 	flag.BoolVar(&step, "step", false, "Prompt to press enter before every step")
 	var input string
@@ -379,7 +373,67 @@ func main() {
 	}
 
 	if generate {
-		generateWorld(worldFile)
+		var width, height, areaCount int
+		if size != "" {
+			if size == "random" {
+				width = rand.Intn(128-4) + 4
+				height = rand.Intn(128-4) + 4
+			} else {
+				parts := strings.Split(size, "x")
+				if len(parts) != 2 {
+					fmt.Fprintln(os.Stderr, "Invalid size format")
+					os.Exit(1)
+				}
+				var err error
+				width, err = strconv.Atoi(parts[0])
+				if err != nil {
+					fmt.Fprintln(os.Stderr, "Invalid size format")
+					os.Exit(1)
+				}
+				height, err = strconv.Atoi(parts[1])
+				if err != nil {
+					fmt.Fprintln(os.Stderr, "Invalid size format")
+					os.Exit(1)
+				}
+				if width < 4 || width > 128 {
+					fmt.Fprintln(os.Stderr, "Invalid width: min: 4, max: 128")
+					os.Exit(1)
+				}
+				if height < 4 || height > 128 {
+					fmt.Fprintln(os.Stderr, "Invalid height: min: 4, max: 128")
+					os.Exit(1)
+				}
+			}
+		} else {
+			width = inputInt("Width (4-128): ", 4, 128)
+			height = inputInt("Height (4-128): ", 4, 128)
+		}
+
+		maxAreaCount := width*height - 1
+		if maxAreaCount > 26 {
+			maxAreaCount = 26
+		}
+
+		if areaCountStr != "" {
+			if areaCountStr == "random" {
+				areaCount = rand.Intn(maxAreaCount-2) + 2
+			} else {
+				var err error
+				areaCount, err = strconv.Atoi(areaCountStr)
+				if err != nil {
+					fmt.Fprintln(os.Stderr, "Invalid area count: not a number")
+					os.Exit(1)
+				}
+				if areaCount < 2 || areaCount > 26 {
+					fmt.Fprintln(os.Stderr, "Invalid area count: min: 2, max: 26")
+					os.Exit(1)
+				}
+			}
+		} else {
+			areaCount = inputInt(fmt.Sprintf("Area count (2-%d): ", maxAreaCount), 2, maxAreaCount)
+		}
+
+		generateWorld(worldFile, width, height, areaCount)
 		return
 	}
 
