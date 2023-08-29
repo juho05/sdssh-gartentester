@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -33,12 +34,16 @@ type Garden struct {
 }
 
 var (
-	out     = colorable.NewColorableStdout()
-	noDelay = false
-	step    = false
+	out        = colorable.NewColorableStdout()
+	noDelay    = false
+	step       = false
+	jsonOutput = false
 )
 
 func (w *Garden) print(clear bool) {
+	if jsonOutput {
+		return
+	}
 	if clear {
 		fmt.Fprintf(out, "\033[H\033[2J")
 	}
@@ -359,7 +364,7 @@ func main() {
 	var generate bool
 	flag.BoolVar(&generate, "generate", false, "Generate a random garden")
 	var size string
-	flag.StringVar(&size, "size", "", "The size of the garden to generate (format: widthxheight (e.g. 64x32, min: 4, max: 128) or random), default: prompt user")
+	flag.StringVar(&size, "size", "", "The size of the garden to generate (format: widthxheight (e.g. 64x32 => min: 4, max: 128) or random), default: prompt user")
 	var areaCountStr string
 	flag.StringVar(&areaCountStr, "area-count", "", "The number of areas to generate (2-26 or random), default: prompt user")
 	flag.BoolVar(&noDelay, "no-delay", false, "Disable delay between steps")
@@ -368,7 +373,12 @@ func main() {
 	flag.StringVar(&input, "input", "", "File path to file containing commands")
 	var seedStr string
 	flag.StringVar(&seedStr, "seed", "", "PRNG seed for generator (integer)")
+	flag.BoolVar(&jsonOutput, "json", false, "Output stats in JSON format")
 	flag.Parse()
+
+	if jsonOutput {
+		noDelay = jsonOutput
+	}
 
 	if seedStr != "" {
 		seed, err := strconv.Atoi(seedStr)
@@ -473,6 +483,17 @@ func main() {
 	}
 
 	commandCount := garden.run(file)
+	if jsonOutput {
+		type result struct {
+			Success      bool `json:"success"`
+			CommandCount int  `json:"commandCount"`
+		}
+		json.NewEncoder(os.Stdout).Encode(&result{
+			Success:      garden.check(),
+			CommandCount: commandCount,
+		})
+		return
+	}
 	garden.print(!noDelay)
 	if garden.check() {
 		fmt.Printf("Success! The garden is tidy. The robot executed %d commands.\n", commandCount)

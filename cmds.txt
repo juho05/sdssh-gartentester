@@ -1,0 +1,36 @@
+fahre_westen 7
+fahre_norden 5
+gegenstand_aufheben
+fahre_westen 10
+fahre_sueden 11
+gegenstand_absetzen
+fahre_westen 1
+fahre_norden 2
+gegenstand_aufheben
+fahre_osten 11
+fahre_norden 9
+gegenstand_absetzen
+fahre_osten 8
+fahre_norden 2
+gegenstand_aufheben
+fahre_westen 11
+fahre_norden 3
+gegenstand_absetzen
+fahre_westen 7
+fahre_sueden 16
+gegenstand_aufheben
+fahre_osten 18
+fahre_norden 13
+gegenstand_absetzen
+fahre_westen 11
+fahre_norden 3
+gegenstand_aufheben
+fahre_westen 7
+fahre_sueden 16
+gegenstand_absetzen
+fahre_osten 4
+fahre_norden 14
+gegenstand_aufheben
+fahre_osten 3
+fahre_norden 2
+gegenstand_absetzen

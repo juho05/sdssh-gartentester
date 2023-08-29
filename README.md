@@ -73,6 +73,12 @@ chmod +x gartentester
 ./gartentester -generate -seed 42 garden.txt
 ```
 
+#### Output test result as JSON object
+
+```sh
+./gartentester -generate -json garden.txt
+```
+
 ## Building
 
 ### Prerequisites
