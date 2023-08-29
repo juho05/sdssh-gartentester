@@ -305,9 +305,9 @@ func generateGarden(path string, width, height, areaCount int) {
 	areas := make(map[rune]int, areaCount)
 	areaLocations := make(map[int]rune, areaCount)
 	for i := 0; i < areaCount; i++ {
-		areas[rune('A'+i)] = rand.Intn(areaCount*3) * 10
+		areas[rune('A'+i)] = random.Intn(areaCount*3) * 10
 		for {
-			location := rand.Intn(width * height)
+			location := random.Intn(width * height)
 			if _, ok := areaLocations[location]; !ok {
 				areaLocations[location] = rune('A' + i)
 				break
@@ -315,14 +315,14 @@ func generateGarden(path string, width, height, areaCount int) {
 		}
 	}
 
-	emptyCount := rand.Intn(areaCount/2) + 1
+	emptyCount := random.Intn(areaCount/2) + 1
 	for i := 0; i < emptyCount; i++ {
-		areas[rune('A'+rand.Intn(areaCount-1))] = -1
+		areas[rune('A'+random.Intn(areaCount-1))] = -1
 	}
 
 	var robotPos int
 	for {
-		robotPos = rand.Intn(width * height)
+		robotPos = random.Intn(width * height)
 		if _, ok := areaLocations[robotPos]; !ok {
 			break
 		}
@@ -353,6 +353,8 @@ func generateGarden(path string, width, height, areaCount int) {
 	}
 }
 
+var random = rand.New(rand.NewSource(time.Now().UnixNano()))
+
 func main() {
 	var generate bool
 	flag.BoolVar(&generate, "generate", false, "Generate a random garden")
@@ -364,7 +366,18 @@ func main() {
 	flag.BoolVar(&step, "step", false, "Prompt to press enter before every step")
 	var input string
 	flag.StringVar(&input, "input", "", "File path to file containing commands")
+	var seedStr string
+	flag.StringVar(&seedStr, "seed", "", "PRNG seed for generator (integer)")
 	flag.Parse()
+
+	if seedStr != "" {
+		seed, err := strconv.Atoi(seedStr)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Seed must be an integer")
+			os.Exit(1)
+		}
+		random = rand.New(rand.NewSource(int64(seed)))
+	}
 
 	gardenFile := flag.Arg(0)
 	if gardenFile == "" {
@@ -376,8 +389,8 @@ func main() {
 		var width, height, areaCount int
 		if size != "" {
 			if size == "random" {
-				width = rand.Intn(128-4) + 4
-				height = rand.Intn(128-4) + 4
+				width = random.Intn(128-4) + 4
+				height = random.Intn(128-4) + 4
 			} else {
 				parts := strings.Split(size, "x")
 				if len(parts) != 2 {
@@ -416,7 +429,7 @@ func main() {
 
 		if areaCountStr != "" {
 			if areaCountStr == "random" {
-				areaCount = rand.Intn(maxAreaCount-2) + 2
+				areaCount = random.Intn(maxAreaCount-2) + 2
 			} else {
 				var err error
 				areaCount, err = strconv.Atoi(areaCountStr)

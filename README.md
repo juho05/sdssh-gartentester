@@ -67,6 +67,12 @@ chmod +x gartentester
 ./gartentester -step -input commands.txt example-garden.txt
 ```
 
+#### Generate with deterministic seed
+
+```sh
+./gartentester -generate -seed 42 garden.txt
+```
+
 ## Building
 
 ### Prerequisites
