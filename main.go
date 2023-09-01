@@ -389,6 +389,12 @@ func main() {
 		random = rand.New(rand.NewSource(int64(seed)))
 	}
 
+	if flag.NArg() > 1 {
+		fmt.Fprintln(os.Stderr, "The garden file must be the last argument.")
+		fmt.Fprintf(os.Stderr, "USAGE: %s [OPTIONS] <garden_file>\n", os.Args[0])
+		os.Exit(1)
+	}
+
 	gardenFile := flag.Arg(0)
 	if gardenFile == "" {
 		fmt.Fprintf(os.Stderr, "USAGE: %s [OPTIONS] <garden_file>\n", os.Args[0])
